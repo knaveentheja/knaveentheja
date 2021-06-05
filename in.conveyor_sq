@@ -70,8 +70,8 @@ dump 		dmpbox all mesh/stl 1000 post_sq/box_*.stl bx
 
 #insert particles
 run		300001 upto
-#unfix		ins
+unfix		ins
  
 
-#run 		350001 upto
+run 		350001 upto
  
