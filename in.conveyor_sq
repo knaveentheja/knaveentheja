@@ -25,7 +25,7 @@ fix         	m5 all property/global coefficientRollingFriction peratomtypepair 2
 fix		m6 all property/global coefficientRollingViscousDamping peratomtypepair 2 0.01 0.10 0.10 0.01
 
 
-#pair style
+#New pair style
 pair_style 	gran model hertz tangential history rolling_friction epsd2 surface superquadric
 pair_coeff	* *
 
@@ -34,9 +34,9 @@ timestep	0.00001
 fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
 
 #granular walls
-fix		cv all mesh/surface file conveyor.stl type 1 surface_vel -1.0 0.0 0.0
-fix		bx all mesh/surface file box.stl      type 1 
-fix		inface all mesh/surface/planar file insertion_face.stl type 1
+fix		cv all mesh/surface file meshes/conveyor.stl type 1 surface_vel -1.0 0.0 0.0
+fix		bx all mesh/surface file meshes/box.stl      type 1 
+fix		inface all mesh/surface/planar file meshes/insertion_face.stl type 1
 fix 		wall all wall/gran model hertz tangential history rolling_friction epsd2 surface superquadric mesh n_meshes 2 meshes bx cv
 
 #distributions for insertion
@@ -70,7 +70,8 @@ dump 		dmpbox all mesh/stl 1000 post_sq/box_*.stl bx
 
 #insert particles
 run		300001 upto
-unfix		ins
+#unfix		ins
+ 
 
-run 		350001 upto
+#run 		350001 upto
  
