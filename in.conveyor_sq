@@ -64,7 +64,7 @@ shell		mkdir	post_sq
 #insert the first particles so that dump is not empty
 run		1
 dump 		dmp all custom/vtk 1000 post_sq/particles*.superq.vtk id type mass x y z vx vy vz fx fy fz omegax omegay omegaz radius shapex shapey shapez &
-		quat1 quat2 quat3 quat4 blockiness1 blockiness2 tqx tqy tqz angmomx angmomy angmomz f_ts[1] f_ts[2]
+		quat1 quat2 quat3 quat4 blockiness1 blockiness2 tqx tqy tqz angmomx angmomy angmomz
 dump   		dmpconveyor all mesh/stl 1000 post_sq/conveyor_*.stl cv
 dump 		dmpbox all mesh/stl 1000 post_sq/box_*.stl bx
 
