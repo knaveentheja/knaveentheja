@@ -54,7 +54,7 @@ fix		integrator all nve/superquadric integration_scheme 1
 
 #output settings, include total thermal energy
 fix		ts all check/timestep/gran 1000 0.1 0.1
-compute	rke all erotate/superquadric
+compute		rke all erotate/superquadric
 thermo_style	custom step atoms ke c_rke f_ts[1] f_ts[2] vol
 thermo		1000
 thermo_modify	lost error flush yes norm no
