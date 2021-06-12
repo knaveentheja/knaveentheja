@@ -1,0 +1,78 @@
+# Angle of repose test on superquadric particles (sugar cubes)
+
+echo 			both
+atom_style		superquadric
+atom_modify		map array sort 1000 0.01
+boundary		f f f
+soft_particles		yes
+newton			off				# newton 3rd law, applied between atoms
+
+communicate		multi cutoff 0.01 vel yes
+
+units			si
+
+region			reg block -0.08 0.08 -0.03 1.0 -0.08 0.08 units box
+create_box		2 reg  	# 1 -> superquadric; 2 -> walls
+
+neighbor		0.01 bin
+neigh_modify		delay 0
+
+# Material properties required for new pair styles
+
+fix 			m1 all property/global youngsModulus peratomtype 1.e6 1.e6
+fix 			m2 all property/global poissonsRatio peratomtype 0.3 0.3
+fix 			m3 all property/global coefficientRestitution peratomtypepair 2 0.2 0.2 0.2 0.2
+fix 			m4 all property/global coefficientFriction peratomtypepair 2 0.6 0.4 0.4 0.6
+#fix         		m5 all property/global coefficientRollingFriction peratomtypepair 2 0.01 0.05 0.05 0.01
+
+
+# pairing style
+pair_style		gran model hertz tangential history surface superquadric
+pair_coeff		* *
+
+timestep		1.e-5
+
+fix			gravi all gravity 9.81 vector 0.0 -1.0 0.0
+
+# walls
+fix			cylinder all mesh/surface file aor_cylinder.stl type 2 scale 0.001
+fix			table all mesh/surface file aor_table.stl type 2 scale 0.001
+fix 			wall all wall/gran model hertz tangential history surface superquadric mesh n_meshes 2 meshes cylinder table
+
+# particles distribution
+fix 			pts1 all particletemplate/superquadric 15485863 atom_type 1 density constant 957 shape constant 0.0085 0.0075 0.006 blockiness constant 10.0 10.0
+fix 			pdd1 all particledistribution/discrete 15485867 1 pts1 1.0
+
+# apply nve integration to all particles that are inserted as single particles
+fix			integrator all nve/superquadric integration_scheme 1
+
+# particles insertion
+group			nve_group region reg
+region			inser cylinder y 0.0 0.0 0.075 0.018 0.118 units box		# center, radius, height
+fix			ins nve_group insert/pack seed 32452867 distributiontemplate pdd1 verbose yes maxattempt 1000 &
+			vel gaussian 0.0 0.1 0.0 0.1 0.2 0.1 orientation random insert_every 5000 overlapcheck yes all_in yes &
+			volumefraction_region 1.0 region inser ntry_mc 1000
+
+# output settings, include total thermal energy
+compute       		rke all erotate/superquadric
+thermo_style  		custom step atoms ke c_rke vol
+thermo        		5000
+thermo_modify 		lost ignore flush yes norm no
+
+# dump settings
+shell			mkdir post_sugar_cube
+run 			1
+
+dump			dmpparticle all custom/vtk 1000 post_sugar_cube/particles_*.vtk id type mass x y z vx vy vz fx fy fz omegax &
+			omegay omegaz radius shapex shapey shapez quat1 quat2 quat3 quat4 blockiness1 blockiness2 tqx tqy tqz angmomx angmomy angmomz
+dump			dmpcylinder all mesh/stl 1000 post_sugar_cube/cylinder_*.stl cylinder
+dump			dmptable all mesh/stl 1000 post_sugar_cube/table_*.stl table
+
+run			30000 upto
+unfix			ins
+run			100000 upto
+fix			removecylinder nve_group move/mesh mesh cylinder linear 0.0 1.0 0.0
+run			115000 upto
+unfix			removecylinder
+run 			200000 upto
+
